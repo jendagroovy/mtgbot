@@ -151,3 +151,13 @@ from . import serverinfo_warning_pb2
 from . import serverinfo_zone_pb2
 from . import session_commands_pb2
 from . import session_event_pb2
+
+from .extension_mapping import construct_extension_mapping
+
+COMMAND_EXTENSION_MAP = construct_extension_mapping((
+    session_commands_pb2.SessionCommand,
+    room_commands_pb2.RoomCommand,
+    game_commands_pb2.GameCommand,
+    moderator_commands_pb2.ModeratorCommand,
+    admin_commands_pb2.AdminCommand
+))
