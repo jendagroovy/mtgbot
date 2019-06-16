@@ -36,26 +36,8 @@ LOGGING = {
 logging.config.dictConfig(LOGGING)
 
 
-class CommandWrapper():
-
-    def __init__(self, command_class):
-        self._container = CommandContainer()
-        session_command = self._container.session_command.add()
-        self._command = session_command.Extensions[command_class.ext]
-        self._command.Clear()
-
-    def __getattr__(self, name):
-        return getattr(self._command, name)
-
-    def __setattr__(self, name, value):
-        if name in ("_container", "_command"):
-            super().__setattr__(name, value)
-        else:
-            setattr(self._command, name, value)
-
-
 @attr.s
-class Client():
+class Client:
 
     host = attr.ib()
     port = attr.ib()
@@ -115,7 +97,6 @@ if __name__ == "__main__":
 
     client.connect()
 
-    #cmd_login = CommandWrapper(Command_Login)
     cmd_login = Command_Login()
     cmd_login.user_name = "Bot"
     cmd_login.password = ""
@@ -125,13 +106,6 @@ if __name__ == "__main__":
 
     client.send_command(cmd_login)
     client.recv()
-    client.recv()
-
-    #cmd_ping = CommandWrapper(Command_Ping)
-    cmd_ping = Command_Ping()
-    client.send_command(cmd_ping)
-    client.recv()
-    client.send_command(cmd_ping)
     client.recv()
 
     cmd_listrooms = Command_ListRooms()
