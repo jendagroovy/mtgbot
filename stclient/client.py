@@ -24,7 +24,8 @@ from .pypb import (
     ServerMessage
 )
 
-from .pypb import COMMAND_EXTENSION_MAP
+from .extension_mapping import COMMAND_EXTENSION_MAP
+
 
 log = logging.getLogger(__name__)
 LOGGING = {
