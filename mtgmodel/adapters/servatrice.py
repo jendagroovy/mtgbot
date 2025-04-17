@@ -35,8 +35,8 @@ class ServatriceAdapter(GameAdapter):
         for card in cards:
             self.game.card_drawn(card_id=card.id, card_name=card.name)
 
-    def select_deck(self):
-        self.client.select_deck()
+    def select_deck(self, deck):
+        self.client.select_deck(deck)
 
     def ready(self):
         self.client.ready()

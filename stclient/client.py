@@ -7,6 +7,7 @@ import logging.config
 import socket
 import struct
 import time
+import xml.etree.ElementTree as ET
 
 from .pypb import (
     CommandContainer,
@@ -25,6 +26,7 @@ from .pypb import (
 )
 
 from .extension_mapping import COMMAND_EXTENSION_MAP
+from mtgmodel.model import DeckData
 
 
 log = logging.getLogger(__name__)
@@ -262,9 +264,48 @@ class ServatriceClient:
         self.send_command(cmd_ping)
         self.recv()
 
-    def select_deck(self):
+    def deck_to_cockatrice_xml(self, deck):
+        """Convert DeckData to Cockatrice XML format.
+        
+        Args:
+            deck (DeckData): The deck data to convert
+            
+        Returns:
+            str: XML string in Cockatrice deck format
+        """
+        # Create root element
+        root = ET.Element("cockatrice_deck")
+        root.set("version", "1")
+        
+        # Add deck name and comments
+        ET.SubElement(root, "deckname").text = deck.name
+        ET.SubElement(root, "comments").text = deck.description
+        
+        # Add main deck cards
+        main_zone = ET.SubElement(root, "zone")
+        main_zone.set("name", "main")
+        for card in deck.cards:
+            card_elem = ET.SubElement(main_zone, "card")
+            card_elem.set("number", str(card.get("count", 1)))
+            card_elem.set("name", card["name"])
+        
+        # Add sideboard cards if any
+        if deck.sideboard:
+            side_zone = ET.SubElement(root, "zone")
+            side_zone.set("name", "side")
+            for card in deck.sideboard:
+                card_elem = ET.SubElement(side_zone, "card")
+                card_elem.set("number", str(card.get("count", 1)))
+                card_elem.set("name", card["name"])
+        
+        # Convert to string with proper XML declaration
+        xml_str = '<?xml version="1.0"?>\n'
+        xml_str += ET.tostring(root, encoding='unicode')
+        return xml_str
+
+    def select_deck(self, deck):
         cmd_deckselect = Command_DeckSelect()
-        cmd_deckselect.deck = DECK_COCKATRICE
+        cmd_deckselect.deck = self.deck_to_cockatrice_xml(deck)
         self.send_command(cmd_deckselect)
         self.recv()
 

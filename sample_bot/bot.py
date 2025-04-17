@@ -4,10 +4,15 @@ from stclient import ServatriceClient
 import json
 import time
 
+from mtgmodel.model import DeckData
+
 
 class Bot:
     def __init__(self):
+        self.game_creator = False
         self.client = self.initialize_client()
+        self.join_game()
+
         self.game = GameModel.with_servatrice(client=self.client)
 
     @staticmethod
@@ -16,21 +21,23 @@ class Bot:
 
         client.connect()
         client.login(user_name="Bot", password="")
-        client.join_room(0);
+        client.join_room(0)
 
-        if len(client.game_list) > 0:
-            client.join_game(client.game_list[0].game_id)
+        return client
+    
+    def join_game(self):
+        if len(self.client.game_list) > 0:
+            self.client.join_game(self.client.game_list[0].game_id)
             print("Joined game")
         else:
-            client.create_game(
+            self.client.create_game(
                 description="Simulation",
                 max_players=2,
                 spectators_allowed=True,
                 spectators_see_everything=True
             )
-            print("Created game")
-
-        return client
+            self.game_creator = True
+            print("Created game")   
 
     def find_lands_to_pay_for(self, card_to_play):
         lands = []
@@ -92,9 +99,14 @@ class Bot:
 
     def run(self):
         # Load deck json
-        with open("Might.json") as fp:
+        if self.game_creator:
+            deck_file = "decks/Might_DDS.json"
+        else:
+            deck_file = "decks/Nissa_DDR.json"
+
+        with open(deck_file) as fp:
             deck_json = json.load(fp)
-        deck = {card["name"]: card for card in deck_json["mainBoard"]}
+        deck = DeckData.from_json(deck_json)
 
         game = self.game
 
